@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BisnisKu - Input & Pengaturan</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #1f2937;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 520px;
+            margin: 0 auto;
+            min-height: 100vh;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        header p {
+            font-size: 0.8rem;
+            color: #4b5563;
+        }
+
+        .nav-link {
+            display: block;
+            text-align: center;
+            background-color: #eff6ff;
+            color: #2563eb;
+            padding: 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            border: 1px solid #bfdbfe;
+            transition: background-color 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: #dbeafe;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .metric-card h3 {
+            font-size: 0.7rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .metric-card .metric-val {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .card-box {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            margin-bottom: 16px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .card-box h2 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: 12px;
+        }
+
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #4b5563;
+            margin-bottom: 4px;
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-text-action {
+            background: none;
+            border: none;
+            color: #2563eb;
+            font-size: 0.7rem;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-text-action:hover { text-decoration: underline; }
+
+        .form-group input, 
+        .form-group select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            outline: none;
+            background-color: #fff;
+        }
+
+        .form-group input:focus, 
+        .form-group select:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
+        }
+
+        .btn-submit {
+            width: 100%;
+            background-color: #2563eb;
+            color: white;
+            font-weight: 500;
+            padding: 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+        .btn-submit:hover {
+            background-color: #1d4ed8;
+        }
+
+        .btn-cancel {
+            width: 100%;
+            background-color: #6b7280;
+            color: white;
+            font-weight: 500;
+            padding: 8px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            margin-top: 6px;
+            display: none;
+        }
+        .btn-cancel:hover { background-color: #4b5563; }
+
+        /* Table & Filter Styles */
+        .table-filter-row {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+            align-items: center;
+        }
+
+        .table-filter-row input[type="date"] {
+            padding: 6px 8px;
+            font-size: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            outline: none;
+        }
+
+        .table-responsive {
+            width: 100%;
+            overflow-x: auto;
+            max-height: 250px;
+            overflow-y: auto;
+        }
+
+        table.trx-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.75rem;
+        }
+
+        table.trx-table th, table.trx-table td {
+            padding: 8px 6px;
+            text-align: left;
+            border-bottom: 1px solid #e5e7eb;
+            white-space: nowrap;
+        }
+
+        table.trx-table th {
+            background-color: #f9fafb;
+            font-weight: 600;
+            color: #374151;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        .table-actions {
+            display: flex;
+            gap: 4px;
+        }
+
+        .btn-table-action {
+            padding: 2px 6px;
+            font-size: 0.65rem;
+            border-radius: 4px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn-table-edit { background-color: #eff6ff; color: #2563eb; }
+        .btn-table-del { background-color: #fef2f2; color: #dc2626; }
+
+        /* Modal Styles */
+        .modal {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex; justify-content: center; align-items: center;
+            z-index: 1000;
+            padding: 16px;
+        }
+
+        .modal-content {
+            background: white;
+            width: 100%;
+            max-width: 400px;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .modal-header {
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .modal-header h3 { font-size: 0.95rem; font-weight: 600; color: #374151; }
+
+        .btn-close { 
+            background: none; border: none; font-size: 1.2rem; cursor: pointer; color: #6b7280; 
+        }
+
+        .filter-buttons {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 12px;
+        }
+
+        .btn-filter {
+            flex: 1;
+            padding: 6px 4px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background-color: #f9fafb;
+            color: #4b5563;
+            cursor: pointer;
+            text-align: center;
+        }
+
+        .btn-filter.active {
+            background-color: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        .modal-cat-list {
+            list-style: none;
+            max-height: 200px;
+            overflow-y: auto;
+            margin-top: 8px;
+            padding-right: 4px;
+        }
+
+        .modal-cat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            background-color: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            margin-bottom: 6px;
+            font-size: 0.8rem;
+        }
+
+        .modal-cat-actions { display: flex; gap: 6px; }
+
+        .btn-action-icon {
+            background: none; border: none; font-size: 0.75rem; cursor: pointer; padding: 2px 6px; border-radius: 4px;
+        }
+        .btn-edit-cat { color: #2563eb; background-color: #eff6ff; }
+        .btn-del-cat { color: #dc2626; background-color: #fef2f2; }
+        .empty-item { text-align: center; color: #9ca3af; padding: 12px 0; font-size: 0.75rem; }
+
+        footer {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <div>
+            <!-- Header -->
+            <header>
+                <h1>BisnisKu</h1>
+                <p>Form Input Transaksi & Pengaturan Usaha</p>
+            </header>
+
+            <a href="index.html" class="nav-link">&larr; Lihat Dashboard & Grafik Keuangan</a>
+
+            <!-- Target & Batas Pengeluaran Harian -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>Target Usaha</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span id="target-value-text" class="metric-val">Rp 5.000.000</span>
+                        <button type="button" class="btn-text-action" onclick="editTarget()">Ubah</button>
+                    </div>
+                </div>
+                <div class="metric-card">
+                    <h3>Batas Pengeluaran</h3>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <span id="limit-value-text" class="metric-val">Rp 500.000</span>
+                        <button type="button" class="btn-text-action" onclick="editLimit()">Ubah</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Form Catat Transaksi Bisnis -->
+            <div class="card-box">
+                <h2 id="form-title">Catat Transaksi Usaha Baru</h2>
+                <form id="form-transaction">
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label>Jenis Bisnis</label>
+                            <button type="button" class="btn-text-action" onclick="openBusinessModal()">Kelola Jenis Bisnis</button>
+                        </div>
+                        <select id="text" required>
+                            <!-- Diisi dinamis via Firebase -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Jumlah (Rp)</label>
+                        <input type="text" id="amount" required placeholder="Contoh: 150.000">
+                    </div>
+                    <div class="form-group">
+                        <label>Jenis Arus Kas</label>
+                        <select id="type" onchange="updateCategories()">
+                            <option value="income">Pemasukan (Pendapatan)</option>
+                            <option value="expense" selected>Pengeluaran (Biaya/Modal)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label id="category-label">Alasan / Kategori Pengeluaran</label>
+                            <button type="button" class="btn-text-action" onclick="openCategoryModal()">Kelola Kategori</button>
+                        </div>
+                        <select id="category">
+                            <!-- Diisi dinamis via Firebase -->
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Tanggal Transaksi</label>
+                        <input type="date" id="date" required>
+                    </div>
+                    <button type="submit" id="btn-submit" class="btn-submit">Simpan Transaksi</button>
+                    <button type="button" id="btn-cancel" class="btn-cancel" onclick="cancelEditMode()">Batal Edit</button>
+                </form>
+            </div>
+
+            <!-- Tabel Daftar Transaksi & Bisnis -->
+            <div class="card-box">
+                <h2>Kelola Transaksi & Bisnis</h2>
+                <div class="table-filter-row">
+                    <label style="font-size: 0.75rem; color: #4b5563; font-weight: 500;">Filter Tanggal:</label>
+                    <input type="date" id="filter-date" onchange="renderTransactionTable()" style="flex: 1;">
+                    <button type="button" class="btn-filter" style="flex: none; padding: 6px 10px;" onclick="resetDateFilter()">Reset</button>
+                </div>
+                <div class="table-responsive">
+                    <table class="trx-table">
+                        <thead>
+                            <tr>
+                                <th>Tanggal</th>
+                                <th>Bisnis</th>
+                                <th>Kategori</th>
+                                <th>Jenis</th>
+                                <th>Jumlah</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="transaction-table-body">
+                            <!-- Data transaksi diisi via Firebase -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2026 BisnisKu - Sistem Pencatatan Keuangan Usaha
+        </footer>
+    </div>
+
+    <!-- Modal Kelola Kategori & Jenis Bisnis -->
+    <div id="category-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modal-title">Kelola Data</h3>
+                <button type="button" class="btn-close" onclick="closeCategoryModal()">&times;</button>
+            </div>
+            <div class="filter-buttons" style="margin-bottom: 12px;">
+                <button type="button" class="btn-filter active" id="modal-tab-expense" onclick="switchModalTab('expense')">Pengeluaran</button>
+                <button type="button" class="btn-filter" id="modal-tab-income" onclick="switchModalTab('income')">Pemasukan</button>
+                <button type="button" class="btn-filter" id="modal-tab-business" onclick="switchModalTab('business')">Jenis Bisnis</button>
+            </div>
+            <div class="form-group">
+                <div style="display: flex; gap: 6px;">
+                    <input type="text" id="modal-new-cat" placeholder="Nama baru...">
+                    <button type="button" onclick="addItemFromModal()" class="btn-submit" style="width: auto; padding: 8px 14px;">Tambah</button>
+                </div>
+            </div>
+            <ul id="modal-category-list" class="modal-cat-list"></ul>
+        </div>
+    </div>
+
+    <!-- JavaScript Firebase & Input Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import { 
+            getFirestore, 
+            collection, 
+            addDoc, 
+            doc, 
+            setDoc, 
+            updateDoc, 
+            deleteDoc, 
+            onSnapshot 
+        } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA8ut1FN3i_hzY6FT9Zyo6kzQQrwoGs7BA",
+            authDomain: "laporan-280b1.firebaseapp.com",
+            projectId: "laporan-280b1",
+            storageBucket: "laporan-280b1.firebasestorage.app",
+            messagingSenderId: "669388965843",
+            appId: "1:669388965843:web:84aa2e70176252debdd126"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const formEl = document.getElementById('form-transaction');
+        const formTitleEl = document.getElementById('form-title');
+        const btnSubmitEl = document.getElementById('btn-submit');
+        const btnCancelEl = document.getElementById('btn-cancel');
+
+        const textEl = document.getElementById('text');
+        const amountEl = document.getElementById('amount');
+        const typeEl = document.getElementById('type');
+        const categoryEl = document.getElementById('category');
+        const categoryLabelEl = document.getElementById('category-label');
+        const dateEl = document.getElementById('date');
+
+        const filterDateEl = document.getElementById('filter-date');
+        const transactionTableBody = document.getElementById('transaction-table-body');
+
+        const targetValueText = document.getElementById('target-value-text');
+        const limitValueText = document.getElementById('limit-value-text');
+
+        const categoryModal = document.getElementById('category-modal');
+        const modalCategoryList = document.getElementById('modal-category-list');
+        const modalNewCatEl = document.getElementById('modal-new-cat');
+        const modalTitleEl = document.getElementById('modal-title');
+        const modalTabExpense = document.getElementById('modal-tab-expense');
+        const modalTabIncome = document.getElementById('modal-tab-income');
+        const modalTabBusiness = document.getElementById('modal-tab-business');
+
+        let transactions = [];
+        let editingId = null;
+        let modalActiveType = 'expense';
+        let businessTarget = 5000000;
+        let dailyLimit = 500000;
+
+        let categories = {
+            income: ['Layanan Publik', 'Investor', 'Penjualan', 'Modal Usaha'],
+            expense: ['Iklan', 'Gaji Karyawan', 'Kuota / Internet', 'Bahan Baku']
+        };
+
+        let businessTypes = [
+            'Kuliner & Makanan',
+            'Fashion & Pakaian',
+            'Jasa & Layanan',
+            'Toko Kelontong & Retail',
+            'Elektronik & Gadget',
+            'Kecantikan & Perawatan',
+            'Lainnya'
+        ];
+
+        dateEl.valueAsDate = new Date();
+
+        function formatRupiah(number) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+        }
+
+        function formatRupiahInput(angka) {
+            let number_string = angka.replace(/[^,\d]/g, '').toString(),
+                split = number_string.split(','),
+                sisa = split[0].length % 3,
+                rupiah = split[0].substr(0, sisa),
+                ribuan = split[0].substr(sisa).match(/\d{3}/gi);
+
+            if (ribuan) {
+                let separator = sisa ? '.' : '';
+                rupiah += separator + ribuan.join('.');
+            }
+
+            return split[1] != undefined ? rupiah + ',' + split[1] : rupiah;
+        }
+
+        amountEl.addEventListener('keyup', function(e) {
+            amountEl.value = formatRupiahInput(this.value);
+        });
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            return new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        async function saveSettingsToFirebase() {
+            try {
+                await setDoc(doc(db, "settings", "config"), {
+                    target: businessTarget,
+                    dailyLimit: dailyLimit,
+                    categories: categories,
+                    businessTypes: businessTypes
+                }, { merge: true });
+            } catch (error) {
+                console.error("Gagal menyimpan pengaturan ke Firebase: ", error);
+            }
+        }
+
+        function updateBusinessTypesSelect() {
+            const currentVal = textEl.value;
+            textEl.innerHTML = '<option value="" disabled selected>Pilih Jenis Bisnis</option>';
+            businessTypes.forEach(bt => {
+                const option = document.createElement('option');
+                option.value = bt;
+                option.textContent = bt;
+                textEl.appendChild(option);
+            });
+            if (businessTypes.includes(currentVal)) {
+                textEl.value = currentVal;
+            }
+        }
+
+        window.updateCategories = function() {
+            const type = typeEl.value;
+            const currentVal = categoryEl.value;
+            categoryEl.innerHTML = '';
+            categoryLabelEl.textContent = type === 'income' ? 'Sumber Pemasukan Uang' : 'Alasan / Keperluan Pengeluaran Uang';
+
+            if (categories[type]) {
+                categories[type].forEach(cat => {
+                    const option = document.createElement('option');
+                    option.value = cat;
+                    option.textContent = cat;
+                    categoryEl.appendChild(option);
+                });
+            }
+            if (categories[type] && categories[type].includes(currentVal)) {
+                categoryEl.value = currentVal;
+            }
+        }
+
+        window.renderTransactionTable = function() {
+            transactionTableBody.innerHTML = '';
+            let filtered = [...transactions];
+
+            const dateFilter = filterDateEl.value;
+            if (dateFilter) {
+                filtered = filtered.filter(t => t.date === dateFilter);
+            }
+
+            if (filtered.length === 0) {
+                transactionTableBody.innerHTML = `<tr><td colspan="6" class="empty-item">Belum ada transaksi yang sesuai.</td></tr>`;
+                return;
+            }
+
+            filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+            filtered.forEach(trx => {
+                const tr = document.createElement('tr');
+                const sign = trx.type === 'expense' ? '-' : '+';
+                const typeText = trx.type === 'expense' ? 'Pengeluaran' : 'Pemasukan';
+                const amountColor = trx.type === 'expense' ? '#dc2626' : '#047857';
+
+                tr.innerHTML = `
+                    <td>${formatDate(trx.date)}</td>
+                    <td>${trx.text}</td>
+                    <td>${trx.category}</td>
+                    <td><span style="color: ${amountColor}; font-weight: 500;">${typeText}</span></td>
+                    <td style="color: ${amountColor}; font-weight: 600;">${sign} ${formatRupiah(trx.amount)}</td>
+                    <td>
+                        <div class="table-actions">
+                            <button type="button" class="btn-table-action btn-table-edit" onclick="editTransaction('${trx.id}')">Edit</button>
+                            <button type="button" class="btn-table-action btn-table-del" onclick="deleteTransaction('${trx.id}')">Hapus</button>
+                        </div>
+                    </td>
+                `;
+                transactionTableBody.appendChild(tr);
+            });
+        }
+
+        window.resetDateFilter = function() {
+            filterDateEl.value = '';
+            window.renderTransactionTable();
+        }
+
+        window.editTransaction = function(id) {
+            const trx = transactions.find(t => t.id === id);
+            if (!trx) return;
+
+            editingId = trx.id;
+            textEl.value = trx.text;
+            amountEl.value = formatRupiahInput(trx.amount.toString());
+            typeEl.value = trx.type;
+            window.updateCategories();
+            categoryEl.value = trx.category;
+            dateEl.value = trx.date;
+
+            formTitleEl.textContent = 'Edit Transaksi Usaha';
+            btnSubmitEl.textContent = 'Perbarui Transaksi';
+            btnCancelEl.style.display = 'block';
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        window.cancelEditMode = function() {
+            editingId = null;
+            formEl.reset();
+            dateEl.valueAsDate = new Date();
+            window.updateCategories();
+            formTitleEl.textContent = 'Catat Transaksi Usaha Baru';
+            btnSubmitEl.textContent = 'Simpan Transaksi';
+            btnCancelEl.style.display = 'none';
+        }
+
+        window.deleteTransaction = async function(id) {
+            if (confirm('Yakin ingin menghapus transaksi ini?')) {
+                try {
+                    await deleteDoc(doc(db, "transactions", id));
+                    if (editingId === id) {
+                        window.cancelEditMode();
+                    }
+                } catch (error) {
+                    console.error("Gagal menghapus transaksi: ", error);
+                    alert("Gagal menghapus transaksi.");
+                }
+            }
+        }
+
+        window.editTarget = async function() {
+            const newVal = prompt('Masukkan target usaha baru (Rp):', businessTarget);
+            if (newVal !== null && !isNaN(newVal) && newVal.trim() !== '') {
+                businessTarget = +newVal;
+                targetValueText.innerText = formatRupiah(businessTarget);
+                await saveSettingsToFirebase();
+            }
+        }
+
+        window.editLimit = async function() {
+            const newVal = prompt('Masukkan batas pengeluaran harian baru (Rp):', dailyLimit);
+            if (newVal !== null && !isNaN(newVal) && newVal.trim() !== '') {
+                dailyLimit = +newVal;
+                limitValueText.innerText = formatRupiah(dailyLimit);
+                await saveSettingsToFirebase();
+            }
+        }
+
+        window.openCategoryModal = function() {
+            modalActiveType = typeEl.value;
+            updateModalTabsUI();
+            renderModalList();
+            categoryModal.style.display = 'flex';
+        }
+
+        window.openBusinessModal = function() {
+            modalActiveType = 'business';
+            updateModalTabsUI();
+            renderModalList();
+            categoryModal.style.display = 'flex';
+        }
+
+        window.closeCategoryModal = function() {
+            categoryModal.style.display = 'none';
+            modalNewCatEl.value = '';
+            window.updateCategories();
+            updateBusinessTypesSelect();
+        }
+
+        window.switchModalTab = function(type) {
+            modalActiveType = type;
+            updateModalTabsUI();
+            renderModalList();
+        }
+
+        function updateModalTabsUI() {
+            modalTabExpense.classList.remove('active');
+            modalTabIncome.classList.remove('active');
+            modalTabBusiness.classList.remove('active');
+
+            if (modalActiveType === 'expense') {
+                modalTabExpense.classList.add('active');
+                modalTitleEl.textContent = 'Kelola Kategori Pengeluaran';
+                modalNewCatEl.placeholder = 'Nama kategori pengeluaran baru...';
+            } else if (modalActiveType === 'income') {
+                modalTabIncome.classList.add('active');
+                modalTitleEl.textContent = 'Kelola Kategori Pemasukan';
+                modalNewCatEl.placeholder = 'Nama kategori pemasukan baru...';
+            } else {
+                modalTabBusiness.classList.add('active');
+                modalTitleEl.textContent = 'Kelola Jenis Bisnis';
+                modalNewCatEl.placeholder = 'Nama jenis bisnis baru...';
+            }
+        }
+
+        function renderModalList() {
+            modalCategoryList.innerHTML = '';
+            let list = [];
+            if (modalActiveType === 'business') {
+                list = businessTypes;
+            } else {
+                list = categories[modalActiveType] || [];
+            }
+
+            if (list.length === 0) {
+                modalCategoryList.innerHTML = '<li class="empty-item">Belum ada data.</li>';
+                return;
+            }
+
+            list.forEach((itemText, index) => {
+                const li = document.createElement('li');
+                li.className = 'modal-cat-item';
+                li.innerHTML = `
+                    <span>${itemText}</span>
+                    <div class="modal-cat-actions">
+                        <button type="button" class="btn-action-icon btn-edit-cat" onclick="editItem('${modalActiveType}', ${index})">Edit</button>
+                        <button type="button" class="btn-action-icon btn-del-cat" onclick="deleteItem('${modalActiveType}', ${index})">Hapus</button>
+                    </div>
+                `;
+                modalCategoryList.appendChild(li);
+            });
+        }
+
+        window.addItemFromModal = async function() {
+            const val = modalNewCatEl.value.trim();
+            if (!val) { alert('Nama tidak boleh kosong.'); return; }
+
+            if (modalActiveType === 'business') {
+                if (businessTypes.includes(val)) { alert('Jenis bisnis tersebut sudah ada.'); return; }
+                businessTypes.push(val);
+                updateBusinessTypesSelect();
+            } else {
+                if (!categories[modalActiveType]) categories[modalActiveType] = [];
+                if (categories[modalActiveType].includes(val)) { alert('Kategori tersebut sudah ada.'); return; }
+                categories[modalActiveType].push(val);
+                window.updateCategories();
+            }
+
+            modalNewCatEl.value = '';
+            renderModalList();
+            await saveSettingsToFirebase();
+        }
+
+        window.editItem = async function(type, index) {
+            if (type === 'business') {
+                const oldName = businessTypes[index];
+                const newName = prompt('Ubah jenis bisnis:', oldName);
+                if (newName !== null) {
+                    const trimmed = newName.trim();
+                    if (!trimmed) { alert('Nama tidak boleh kosong.'); return; }
+                    businessTypes[index] = trimmed;
+                    updateBusinessTypesSelect();
+                    renderModalList();
+                    await saveSettingsToFirebase();
+                }
+            } else {
+                const oldName = categories[type][index];
+                const newName = prompt('Ubah nama kategori:', oldName);
+                if (newName !== null) {
+                    const trimmed = newName.trim();
+                    if (!trimmed) { alert('Nama kategori tidak boleh kosong.'); return; }
+                    categories[type][index] = trimmed;
+                    window.updateCategories();
+                    renderModalList();
+                    await saveSettingsToFirebase();
+                }
+            }
+        }
+
+        window.deleteItem = async function(type, index) {
+            if (type === 'business') {
+                const name = businessTypes[index];
+                if (confirm(`Yakin ingin menghapus jenis bisnis "${name}"?`)) {
+                    businessTypes.splice(index, 1);
+                    updateBusinessTypesSelect();
+                    renderModalList();
+                    await saveSettingsToFirebase();
+                }
+            } else {
+                const catName = categories[type][index];
+                if (confirm(`Yakin ingin menghapus kategori "${catName}"?`)) {
+                    categories[type].splice(index, 1);
+                    window.updateCategories();
+                    renderModalList();
+                    await saveSettingsToFirebase();
+                }
+            }
+        }
+
+        formEl.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            if (textEl.value.trim() === '' || amountEl.value.trim() === '') {
+                alert('Mohon pilih jenis bisnis dan isi jumlah transaksi.');
+                return;
+            }
+
+            const rawAmount = parseInt(amountEl.value.replace(/\./g, ''), 10) || 0;
+
+            try {
+                if (editingId !== null) {
+                    await updateDoc(doc(db, "transactions", editingId), {
+                        text: textEl.value,
+                        amount: rawAmount,
+                        type: typeEl.value,
+                        category: categoryEl.value || 'Umum',
+                        date: dateEl.value || new Date().toISOString().slice(0, 10)
+                    });
+                    alert('Transaksi berhasil diperbarui!');
+                    window.cancelEditMode();
+                } else {
+                    await addDoc(collection(db, "transactions"), {
+                        text: textEl.value,
+                        amount: rawAmount,
+                        type: typeEl.value,
+                        category: categoryEl.value || 'Umum',
+                        date: dateEl.value || new Date().toISOString().slice(0, 10)
+                    });
+                    alert('Transaksi berhasil disimpan!');
+                    formEl.reset();
+                    dateEl.valueAsDate = new Date();
+                    window.updateCategories();
+                }
+            } catch (error) {
+                console.error("Gagal menyimpan transaksi: ", error);
+                alert("Terjadi kesalahan saat menyimpan ke Firebase.");
+            }
+        });
+
+        // Real-time listener untuk pengaturan dari Firebase
+        onSnapshot(doc(db, "settings", "config"), (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.target !== undefined) businessTarget = data.target;
+                if (data.dailyLimit !== undefined) dailyLimit = data.dailyLimit;
+                if (data.categories) categories = data.categories;
+                if (data.businessTypes) businessTypes = data.businessTypes;
+            } else {
+                saveSettingsToFirebase();
+            }
+            targetValueText.innerText = formatRupiah(businessTarget);
+            limitValueText.innerText = formatRupiah(dailyLimit);
+            updateBusinessTypesSelect();
+            window.updateCategories();
+        });
+
+        // Real-time listener untuk transaksi dari Firebase
+        onSnapshot(collection(db, "transactions"), (snapshot) => {
+            transactions = [];
+            snapshot.forEach((docSnap) => {
+                transactions.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            window.renderTransactionTable();
+        });
+    </script>
+</body>
+</html>
