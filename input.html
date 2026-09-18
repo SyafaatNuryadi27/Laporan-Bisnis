@@ -171,6 +171,11 @@
             background-color: #1d4ed8;
         }
 
+        .btn-submit:disabled {
+            background-color: #93c5fd;
+            cursor: not-allowed;
+        }
+
         .btn-cancel {
             width: 100%;
             background-color: #6b7280;
@@ -192,9 +197,11 @@
             gap: 6px;
             margin-bottom: 12px;
             align-items: center;
+            flex-wrap: wrap;
         }
 
-        .table-filter-row input[type="date"] {
+        .table-filter-row input[type="date"],
+        .table-filter-row input[type="text"] {
             padding: 6px 8px;
             font-size: 0.75rem;
             border: 1px solid #d1d5db;
@@ -358,14 +365,14 @@
                 <div class="metric-card">
                     <h3>Target Usaha</h3>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span id="target-value-text" class="metric-val">Rp 5.000.000</span>
+                        <span id="target-value-text" class="metric-val">Rp 0</span>
                         <button type="button" class="btn-text-action" onclick="editTarget()">Ubah</button>
                     </div>
                 </div>
                 <div class="metric-card">
                     <h3>Batas Pengeluaran</h3>
                     <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <span id="limit-value-text" class="metric-val">Rp 500.000</span>
+                        <span id="limit-value-text" class="metric-val">Rp 0</span>
                         <button type="button" class="btn-text-action" onclick="editLimit()">Ubah</button>
                     </div>
                 </div>
@@ -417,9 +424,9 @@
             <div class="card-box">
                 <h2>Kelola Transaksi & Bisnis</h2>
                 <div class="table-filter-row">
-                    <label style="font-size: 0.75rem; color: #4b5563; font-weight: 500;">Filter Tanggal:</label>
-                    <input type="date" id="filter-date" onchange="renderTransactionTable()" style="flex: 1;">
-                    <button type="button" class="btn-filter" style="flex: none; padding: 6px 10px;" onclick="resetDateFilter()">Reset</button>
+                    <input type="text" id="search-keyword" placeholder="Cari bisnis / kategori..." oninput="renderTransactionTable()" style="flex: 1; min-width: 130px;">
+                    <input type="date" id="filter-date" onchange="renderTransactionTable()" style="flex: none;">
+                    <button type="button" class="btn-filter" style="flex: none; padding: 6px 10px;" onclick="resetFilter()">Reset</button>
                 </div>
                 <div class="table-responsive">
                     <table class="trx-table">
@@ -507,6 +514,7 @@
         const dateEl = document.getElementById('date');
 
         const filterDateEl = document.getElementById('filter-date');
+        const searchKeywordEl = document.getElementById('search-keyword');
         const transactionTableBody = document.getElementById('transaction-table-body');
 
         const targetValueText = document.getElementById('target-value-text');
@@ -541,7 +549,10 @@
             'Lainnya'
         ];
 
-        dateEl.valueAsDate = new Date();
+        // Batasi tanggal maksimal hari ini
+        const todayStr = new Date().toISOString().slice(0, 10);
+        dateEl.value = todayStr;
+        dateEl.max = todayStr;
 
         function formatRupiah(number) {
             return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
@@ -626,6 +637,14 @@
                 filtered = filtered.filter(t => t.date === dateFilter);
             }
 
+            const keyword = searchKeywordEl.value.toLowerCase().trim();
+            if (keyword) {
+                filtered = filtered.filter(t => 
+                    t.text.toLowerCase().includes(keyword) || 
+                    t.category.toLowerCase().includes(keyword)
+                );
+            }
+
             if (filtered.length === 0) {
                 transactionTableBody.innerHTML = `<tr><td colspan="6" class="empty-item">Belum ada transaksi yang sesuai.</td></tr>`;
                 return;
@@ -656,8 +675,9 @@
             });
         }
 
-        window.resetDateFilter = function() {
+        window.resetFilter = function() {
             filterDateEl.value = '';
+            searchKeywordEl.value = '';
             window.renderTransactionTable();
         }
 
@@ -683,7 +703,7 @@
         window.cancelEditMode = function() {
             editingId = null;
             formEl.reset();
-            dateEl.valueAsDate = new Date();
+            dateEl.value = todayStr;
             window.updateCategories();
             formTitleEl.textContent = 'Catat Transaksi Usaha Baru';
             btnSubmitEl.textContent = 'Simpan Transaksi';
@@ -871,6 +891,8 @@
             }
 
             const rawAmount = parseInt(amountEl.value.replace(/\./g, ''), 10) || 0;
+            btnSubmitEl.disabled = true;
+            btnSubmitEl.textContent = 'Menyimpan...';
 
             try {
                 if (editingId !== null) {
@@ -879,7 +901,7 @@
                         amount: rawAmount,
                         type: typeEl.value,
                         category: categoryEl.value || 'Umum',
-                        date: dateEl.value || new Date().toISOString().slice(0, 10)
+                        date: dateEl.value || todayStr
                     });
                     alert('Transaksi berhasil diperbarui!');
                     window.cancelEditMode();
@@ -889,20 +911,22 @@
                         amount: rawAmount,
                         type: typeEl.value,
                         category: categoryEl.value || 'Umum',
-                        date: dateEl.value || new Date().toISOString().slice(0, 10)
+                        date: dateEl.value || todayStr
                     });
                     alert('Transaksi berhasil disimpan!');
                     formEl.reset();
-                    dateEl.valueAsDate = new Date();
+                    dateEl.value = todayStr;
                     window.updateCategories();
                 }
             } catch (error) {
                 console.error("Gagal menyimpan transaksi: ", error);
                 alert("Terjadi kesalahan saat menyimpan ke Firebase.");
+            } finally {
+                btnSubmitEl.disabled = false;
+                btnSubmitEl.textContent = editingId !== null ? 'Perbarui Transaksi' : 'Simpan Transaksi';
             }
         });
 
-        // Real-time listener untuk pengaturan dari Firebase
         onSnapshot(doc(db, "settings", "config"), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
@@ -919,7 +943,6 @@
             window.updateCategories();
         });
 
-        // Real-time listener untuk transaksi dari Firebase
         onSnapshot(collection(db, "transactions"), (snapshot) => {
             transactions = [];
             snapshot.forEach((docSnap) => {
