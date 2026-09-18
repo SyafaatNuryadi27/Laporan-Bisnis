@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BisnisKu - Dashboard & Grafik Keuangan</title>
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: #f3f4f6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #1f2937;
+            line-height: 1.5;
+        }
+
+        .container {
+            max-width: 520px;
+            margin: 0 auto;
+            min-height: 100vh;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        header {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.6rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 4px;
+        }
+
+        header p {
+            font-size: 0.8rem;
+            color: #4b5563;
+        }
+
+        .nav-link {
+            display: block;
+            text-align: center;
+            background-color: #eff6ff;
+            color: #2563eb;
+            padding: 10px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 0.85rem;
+            margin-bottom: 16px;
+            border: 1px solid #bfdbfe;
+            transition: background-color 0.2s;
+        }
+
+        .nav-link:hover {
+            background-color: #dbeafe;
+        }
+
+        /* Summary Cards */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .summary-card {
+            padding: 10px 6px;
+            border-radius: 12px;
+            color: white;
+            text-align: center;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .summary-card.balance { background-color: #1d4ed8; }
+        .summary-card.income { background-color: #047857; }
+        .summary-card.expense { background-color: #be123c; }
+
+        .summary-card p.label {
+            font-size: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            font-weight: 600;
+            opacity: 0.9;
+            margin-bottom: 4px;
+        }
+
+        .summary-card p.value {
+            font-size: 0.7rem;
+            font-weight: 700;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        /* Metrics Section Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 12px;
+            border-radius: 12px;
+            border: 1px solid #e5e7eb;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+
+        .metric-card h3 {
+            font-size: 0.7rem;
+            color: #6b7280;
+            text-transform: uppercase;
+            margin-bottom: 4px;
+            font-weight: 600;
+        }
+
+        .metric-card .metric-val {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        /* Card Box */
+        .card-box {
+            background: white;
+            padding: 16px;
+            border-radius: 12px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            margin-bottom: 16px;
+            border: 1px solid #e5e7eb;
+        }
+
+        .card-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .card-box h2 {
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        /* Filter Buttons */
+        .filter-buttons {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 12px;
+        }
+
+        .btn-filter {
+            flex: 1;
+            padding: 6px;
+            font-size: 0.7rem;
+            font-weight: 500;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background-color: #f9fafb;
+            color: #4b5563;
+            cursor: pointer;
+        }
+
+        .btn-filter.active {
+            background-color: #2563eb;
+            color: white;
+            border-color: #2563eb;
+        }
+
+        /* Transaction List */
+        ul#transaction-list {
+            list-style: none;
+            max-height: 220px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        ul#transaction-list li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background-color: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #ccc;
+            font-size: 0.75rem;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            margin-bottom: 8px;
+        }
+
+        ul#transaction-list li.expense { border-left-color: #be123c; }
+        ul#transaction-list li.income { border-left-color: #047857; }
+
+        .trx-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            max-width: 180px;
+        }
+
+        .trx-text {
+            font-weight: 600;
+            color: #374151;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .trx-meta {
+            font-size: 0.65rem;
+            color: #6b7280;
+            display: flex;
+            gap: 6px;
+        }
+
+        .trx-category {
+            background-color: #e5e7eb;
+            padding: 1px 4px;
+            border-radius: 4px;
+            font-size: 0.6rem;
+        }
+
+        .trx-details {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .trx-amount.expense { color: #be123c; font-weight: 600; }
+        .trx-amount.income { color: #047857; font-weight: 600; }
+
+        .empty-item {
+            text-align: center;
+            color: #9ca3af;
+            padding: 12px 0;
+            font-size: 0.75rem;
+            border-left: none !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            display: block !important;
+        }
+
+        /* Chart Containers */
+        .chart-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            margin-top: 8px;
+        }
+
+        .charts-row {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        @media(min-width: 480px) {
+            .charts-row {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+
+        footer {
+            margin-top: 24px;
+            text-align: center;
+            font-size: 11px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+<body>
+    
+    <div class="container">
+        <div>
+            <!-- Header -->
+            <header>
+                <h1>BisnisKu</h1>
+                <p>Dashboard Laporan & Arus Kas Usaha</p>
+            </header>
+
+            <a href="input.html" class="nav-link">+ Tambah Transaksi Baru</a>
+
+            <!-- Ringkasan Keuangan Utama -->
+            <div class="summary-grid">
+                <div class="summary-card balance">
+                    <p class="label">Saldo Kas</p>
+                    <p id="total-balance" class="value">Rp 0</p>
+                </div>
+                <div class="summary-card income">
+                    <p class="label">Total Pemasukan</p>
+                    <p id="total-income" class="value">Rp 0</p>
+                </div>
+                <div class="summary-card expense">
+                    <p class="label">Total Pengeluaran</p>
+                    <p id="total-expense" class="value">Rp 0</p>
+                </div>
+            </div>
+
+            <!-- Target & Batas Pengeluaran Harian -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3>Pemasukan Hari Ini</h3>
+                    <p id="daily-income" class="metric-val" style="color: #047857;">Rp 0</p>
+                </div>
+                <div class="metric-card">
+                    <h3>Target Usaha</h3>
+                    <p id="target-value-text" class="metric-val">Rp 5.000.000</p>
+                </div>
+                <div class="metric-card" style="grid-column: span 2;">
+                    <h3>Batas Pengeluaran Harian</h3>
+                    <p id="limit-value-text" class="metric-val" style="margin-bottom: 2px;">Rp 500.000</p>
+                    <p id="limit-warning" style="font-size: 0.7rem; color: #6b7280;"></p>
+                </div>
+            </div>
+
+            <!-- Grafik Garis: Pergerakan Arus Kas (Gaya Saham) -->
+            <div class="card-box">
+                <h2>Grafik Pergerakan Kas Usaha</h2>
+                <div class="chart-container">
+                    <canvas id="lineChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Grafik Kategori -->
+            <div class="charts-row">
+                <div class="card-box" style="margin-bottom: 0;">
+                    <h2>Kategori Pemasukan</h2>
+                    <div class="chart-container" style="height: 160px;">
+                        <canvas id="incomeCategoryChart"></canvas>
+                    </div>
+                </div>
+                <div class="card-box" style="margin-bottom: 0;">
+                    <h2>Kategori Pengeluaran</h2>
+                    <div class="chart-container" style="height: 160px;">
+                        <canvas id="expenseCategoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Riwayat Transaksi Berdasarkan Nama Bisnis -->
+            <div class="card-box" style="margin-top: 16px;">
+                <div class="card-box-header">
+                    <h2>Tabel Transaksi Berdasarkan Nama Bisnis</h2>
+                </div>
+                
+                <div class="filter-buttons">
+                    <button class="btn-filter active" onclick="setFilter('all', event)">Semua</button>
+                    <button class="btn-filter" onclick="setFilter('income', event)">Pemasukan</button>
+                    <button class="btn-filter" onclick="setFilter('expense', event)">Pengeluaran</button>
+                </div>
+
+                <ul id="transaction-list">
+                    <!-- Data transaksi dimuat otomatis dari Firebase -->
+                </ul>
+            </div>
+        </div>
+
+        <footer>
+            &copy; 2026 BisnisKu - Sistem Pencatatan Keuangan Usaha
+        </footer>
+    </div>
+
+    <!-- JavaScript Firebase & Dashboard Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyA8ut1FN3i_hzY6FT9Zyo6kzQQrwoGs7BA",
+            authDomain: "laporan-280b1.firebaseapp.com",
+            projectId: "laporan-280b1",
+            storageBucket: "laporan-280b1.firebasestorage.app",
+            messagingSenderId: "669388965843",
+            appId: "1:669388965843:web:84aa2e70176252debdd126"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const balanceEl = document.getElementById('total-balance');
+        const incomeEl = document.getElementById('total-income');
+        const expenseEl = document.getElementById('total-expense');
+        const dailyIncomeEl = document.getElementById('daily-income');
+        const listEl = document.getElementById('transaction-list');
+        const targetValueText = document.getElementById('target-value-text');
+        const limitValueText = document.getElementById('limit-value-text');
+        const limitWarningEl = document.getElementById('limit-warning');
+
+        let transactions = [];
+        let currentFilter = 'all';
+        let businessTarget = 5000000;
+        let dailyLimit = 500000;
+
+        let lineChartInstance = null;
+        let incomeChartInstance = null;
+        let expenseChartInstance = null;
+
+        function formatRupiah(number) {
+            return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(number);
+        }
+
+        function formatDate(dateString) {
+            if (!dateString) return '';
+            return new Date(dateString).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' });
+        }
+
+        window.setFilter = function(filter, e) {
+            currentFilter = filter;
+            document.querySelectorAll('.btn-filter').forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
+            renderApp();
+        }
+
+        function updateValues() {
+            const income = transactions.filter(t => t.type === 'income').reduce((acc, t) => acc + t.amount, 0);
+            const expense = transactions.filter(t => t.type === 'expense').reduce((acc, t) => acc + t.amount, 0);
+            const total = income - expense;
+
+            balanceEl.innerText = formatRupiah(total);
+            incomeEl.innerText = formatRupiah(income);
+            expenseEl.innerText = formatRupiah(expense);
+
+            targetValueText.innerText = formatRupiah(businessTarget);
+            limitValueText.innerText = formatRupiah(dailyLimit);
+
+            const todayStr = new Date().toISOString().slice(0, 10);
+            const dailyInc = transactions
+                .filter(t => t.type === 'income' && t.date === todayStr)
+                .reduce((acc, t) => acc + t.amount, 0);
+            dailyIncomeEl.innerText = formatRupiah(dailyInc);
+
+            const dailyExp = transactions
+                .filter(t => t.type === 'expense' && t.date === todayStr)
+                .reduce((acc, t) => acc + t.amount, 0);
+
+            if (dailyExp > dailyLimit) {
+                limitWarningEl.style.color = '#be123c';
+                limitWarningEl.innerText = `Peringatan: Pengeluaran hari ini (${formatRupiah(dailyExp)}) melebihi batas!`;
+            } else {
+                limitWarningEl.style.color = '#047857';
+                limitWarningEl.innerText = `Pengeluaran hari ini aman (${formatRupiah(dailyExp)} / ${formatRupiah(dailyLimit)})`;
+            }
+        }
+
+        function renderCharts() {
+            const dateMap = {};
+            transactions.forEach(t => {
+                if (!dateMap[t.date]) {
+                    dateMap[t.date] = 0;
+                }
+                if (t.type === 'income') dateMap[t.date] += t.amount;
+                if (t.type === 'expense') dateMap[t.date] -= t.amount;
+            });
+
+            const sortedDates = Object.keys(dateMap).sort((a, b) => new Date(a) - new Date(b));
+            const lineLabels = sortedDates.map(d => formatDate(d));
+            
+            let cumulativeBalance = 0;
+            const lineData = sortedDates.map(d => {
+                cumulativeBalance += dateMap[d];
+                return cumulativeBalance;
+            });
+
+            if (lineChartInstance) lineChartInstance.destroy();
+            const ctxLine = document.getElementById('lineChart').getContext('2d');
+            lineChartInstance = new Chart(ctxLine, {
+                type: 'line',
+                data: {
+                    labels: lineLabels.length ? lineLabels : ['Hari Ini'],
+                    datasets: [
+                        {
+                            label: 'Saldo Kumulatif',
+                            data: lineData.length ? lineData : [0],
+                            borderColor: '#2563eb',
+                            backgroundColor: 'rgba(37, 99, 235, 0.1)',
+                            borderWidth: 2,
+                            tension: 0.2,
+                            fill: true,
+                            pointRadius: 3,
+                            pointHoverRadius: 5
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: { 
+                        y: { ticks: { font: { size: 10 } } }, 
+                        x: { ticks: { font: { size: 10 } } } 
+                    }
+                }
+            });
+
+            const incCatMap = {};
+            const expCatMap = {};
+            transactions.forEach(t => {
+                if (t.type === 'income') {
+                    incCatMap[t.category] = (incCatMap[t.category] || 0) + t.amount;
+                } else {
+                    expCatMap[t.category] = (expCatMap[t.category] || 0) + t.amount;
+                }
+            });
+
+            if (incomeChartInstance) incomeChartInstance.destroy();
+            const ctxInc = document.getElementById('incomeCategoryChart').getContext('2d');
+            incomeChartInstance = new Chart(ctxInc, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(incCatMap).length ? Object.keys(incCatMap) : ['Belum ada'],
+                    datasets: [{
+                        data: Object.values(incCatMap).length ? Object.values(incCatMap) : [1],
+                        backgroundColor: ['#047857', '#10b981', '#34d399', '#6ee7b7', '#a7f3d0']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } }
+                }
+            });
+
+            if (expenseChartInstance) expenseChartInstance.destroy();
+            const ctxExp = document.getElementById('expenseCategoryChart').getContext('2d');
+            expenseChartInstance = new Chart(ctxExp, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(expCatMap).length ? Object.keys(expCatMap) : ['Belum ada'],
+                    datasets: [{
+                        data: Object.values(expCatMap).length ? Object.values(expCatMap) : [1],
+                        backgroundColor: ['#be123c', '#e11d48', '#f43f5e', '#fb7185', '#fecdd3']
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 9 } } } }
+                }
+            });
+        }
+
+        function renderApp() {
+            listEl.innerHTML = '';
+            let filtered = transactions;
+            if (currentFilter !== 'all') {
+                filtered = transactions.filter(t => t.type === currentFilter);
+            }
+
+            if (filtered.length === 0) {
+                listEl.innerHTML = '<li class="empty-item">Belum ada riwayat transaksi usaha.</li>';
+            } else {
+                filtered.sort((a, b) => new Date(b.date) - new Date(a.date));
+                filtered.forEach(trx => {
+                    const sign = trx.type === 'expense' ? '-' : '+';
+                    const typeClass = trx.type === 'expense' ? 'expense' : 'income';
+                    const item = document.createElement('li');
+                    item.classList.add(typeClass);
+                    item.innerHTML = `
+                        <div class="trx-info">
+                            <span class="trx-text">🏢 ${trx.text}</span>
+                            <div class="trx-meta">
+                                <span>${formatDate(trx.date)}</span>
+                                <span class="trx-category">${trx.category}</span>
+                            </div>
+                        </div>
+                        <div class="trx-details">
+                            <span class="trx-amount ${typeClass}">${sign} ${formatRupiah(trx.amount)}</span>
+                        </div>
+                    `;
+                    listEl.appendChild(item);
+                });
+            }
+
+            updateValues();
+            renderCharts();
+        }
+
+        // Real-time listener untuk pengaturan dari Firebase
+        onSnapshot(doc(db, "settings", "config"), (docSnap) => {
+            if (docSnap.exists()) {
+                const data = docSnap.data();
+                if (data.target !== undefined) businessTarget = data.target;
+                if (data.dailyLimit !== undefined) dailyLimit = data.dailyLimit;
+            }
+            updateValues();
+        });
+
+        // Real-time listener untuk transaksi dari Firebase
+        onSnapshot(collection(db, "transactions"), (snapshot) => {
+            transactions = [];
+            snapshot.forEach((docSnap) => {
+                transactions.push({ id: docSnap.id, ...docSnap.data() });
+            });
+            renderApp();
+        });
+    </script>
+</body>
+</html>
+
