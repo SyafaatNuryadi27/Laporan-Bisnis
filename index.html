@@ -156,11 +156,26 @@
             color: #374151;
         }
 
-        /* Filter Buttons */
+        /* Filter Controls */
+        .filter-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .search-box-input {
+            width: 100%;
+            padding: 6px 10px;
+            font-size: 0.75rem;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            outline: none;
+        }
+
         .filter-buttons {
             display: flex;
             gap: 6px;
-            margin-bottom: 12px;
         }
 
         .btn-filter {
@@ -318,16 +333,16 @@
                 </div>
                 <div class="metric-card">
                     <h3>Target Usaha</h3>
-                    <p id="target-value-text" class="metric-val">Rp 5.000.000</p>
+                    <p id="target-value-text" class="metric-val">Rp 0</p>
                 </div>
                 <div class="metric-card" style="grid-column: span 2;">
                     <h3>Batas Pengeluaran Harian</h3>
-                    <p id="limit-value-text" class="metric-val" style="margin-bottom: 2px;">Rp 500.000</p>
+                    <p id="limit-value-text" class="metric-val" style="margin-bottom: 2px;">Rp 0</p>
                     <p id="limit-warning" style="font-size: 0.7rem; color: #6b7280;"></p>
                 </div>
             </div>
 
-            <!-- Grafik Garis: Pergerakan Arus Kas (Gaya Saham) -->
+            <!-- Grafik Garis: Pergerakan Arus Kas -->
             <div class="card-box">
                 <h2>Grafik Pergerakan Kas Usaha</h2>
                 <div class="chart-container">
@@ -357,10 +372,13 @@
                     <h2>Tabel Transaksi Berdasarkan Nama Bisnis</h2>
                 </div>
                 
-                <div class="filter-buttons">
-                    <button class="btn-filter active" onclick="setFilter('all', event)">Semua</button>
-                    <button class="btn-filter" onclick="setFilter('income', event)">Pemasukan</button>
-                    <button class="btn-filter" onclick="setFilter('expense', event)">Pengeluaran</button>
+                <div class="filter-container">
+                    <input type="text" id="dashboard-search" class="search-box-input" placeholder="Cari nama bisnis atau kategori..." oninput="renderApp()">
+                    <div class="filter-buttons">
+                        <button class="btn-filter active" onclick="setFilter('all', event)">Semua</button>
+                        <button class="btn-filter" onclick="setFilter('income', event)">Pemasukan</button>
+                        <button class="btn-filter" onclick="setFilter('expense', event)">Pengeluaran</button>
+                    </div>
                 </div>
 
                 <ul id="transaction-list">
@@ -399,6 +417,7 @@
         const targetValueText = document.getElementById('target-value-text');
         const limitValueText = document.getElementById('limit-value-text');
         const limitWarningEl = document.getElementById('limit-warning');
+        const dashboardSearchEl = document.getElementById('dashboard-search');
 
         let transactions = [];
         let currentFilter = 'all';
@@ -553,11 +572,20 @@
             });
         }
 
-        function renderApp() {
+        window.renderApp = function() {
             listEl.innerHTML = '';
             let filtered = transactions;
+
             if (currentFilter !== 'all') {
-                filtered = transactions.filter(t => t.type === currentFilter);
+                filtered = filtered.filter(t => t.type === currentFilter);
+            }
+
+            const keyword = dashboardSearchEl.value.toLowerCase().trim();
+            if (keyword) {
+                filtered = filtered.filter(t => 
+                    t.text.toLowerCase().includes(keyword) || 
+                    t.category.toLowerCase().includes(keyword)
+                );
             }
 
             if (filtered.length === 0) {
@@ -589,7 +617,6 @@
             renderCharts();
         }
 
-        // Real-time listener untuk pengaturan dari Firebase
         onSnapshot(doc(db, "settings", "config"), (docSnap) => {
             if (docSnap.exists()) {
                 const data = docSnap.data();
@@ -599,7 +626,6 @@
             updateValues();
         });
 
-        // Real-time listener untuk transaksi dari Firebase
         onSnapshot(collection(db, "transactions"), (snapshot) => {
             transactions = [];
             snapshot.forEach((docSnap) => {
